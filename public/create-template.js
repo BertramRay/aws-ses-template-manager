@@ -1,3 +1,22 @@
+const parseContent = (content) => {
+  console.log(content);
+  if (!content) return "";
+  // Parse unicode escaped characters
+  let retVal = content.replace(/"/g, '\\"').replace(/(?:\r\n|\r|\n)/g, '\\n');
+  retVal = retVal.replace(/\\u([\d\w]{4})/gi, function (match, grp) {
+    return String.fromCharCode(parseInt(grp, 16));
+  });
+  retVal = retVal.replace(/\\n/g, '\n');
+  retVal = retVal.replace(/\\t/g, '\t');
+  retVal = retVal.replace(/\\r/g, '\r');
+  retVal = retVal.replace(/\\b/g, '\b');
+  retVal = retVal.replace(/\\f/g, '\f');
+  retVal = retVal.replace(/\\'/g, '\'');
+  retVal = retVal.replace(/\\"/g, '\"');
+  retVal = retVal.replace(/\\\\/g, '\\');
+  return retVal;
+};
+
 $(document).ready(function(){
 
   // check to see if the template we're creating is a duplicate of an existing template
@@ -14,9 +33,9 @@ $(document).ready(function(){
     // we need to load the existing template from which we will duplicate
     $.get(`/get-template/${urlParams.get('d-origin')}?region=${localStorage.getItem('region')}`, function (response) {
       $('#templateName').val(urlParams.get('d-name'));
-      $('#templateSubject').val(response.data.SubjectPart);
-      $('#templateText').val(response.data.TextPart);
-      window.codeMirrorEditor.setValue(response.data.HtmlPart ? response.data.HtmlPart : "");
+      $('#templateSubject').val(parseContent(response.data.SubjectPart));
+      $('#templateText').val(parseContent(response.data.TextPart));
+      window.codeMirrorEditor.setValue(response.data.HtmlPart ? parseContent(response.data.HtmlPart) : "");
       $('#saveTemplateCta').removeAttr('disabled');  // enable the save button
     });
   }
